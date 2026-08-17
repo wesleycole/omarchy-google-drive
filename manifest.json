@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.wesleycole.google-drive",
+  "name": "Google Drive",
+  "version": "1.0.0",
+  "author": "Wesley Cole",
+  "license": "MIT",
+  "description": "Mount, search, and browse Google Drive from the Omarchy bar with rclone.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Google Drive",
+    "description": "Connect and mount Google Drive, search files, view storage usage, and open files in Nautilus.",
+    "category": "Files",
+    "aliases": ["google-drive", "drive", "rclone"],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "remoteName": "gdrive",
+      "mountPath": "~/Google Drive",
+      "autoMount": true,
+      "refreshIntervalSec": 60
+    },
+    "schema": [
+      {
+        "key": "remoteName",
+        "type": "string",
+        "label": "rclone remote name",
+        "defaultValue": "gdrive",
+        "description": "The rclone remote that connects to Google Drive. Do not include the trailing colon."
+      },
+      {
+        "key": "mountPath",
+        "type": "path",
+        "label": "Mount folder",
+        "defaultValue": "~/Google Drive"
+      },
+      {
+        "key": "autoMount",
+        "type": "boolean",
+        "label": "Mount at shell startup",
+        "defaultValue": true
+      },
+      {
+        "key": "refreshIntervalSec",
+        "type": "integer",
+        "label": "Refresh interval (seconds)",
+        "min": 15,
+        "max": 3600,
+        "step": 15,
+        "defaultValue": 60
+      }
+    ]
+  }
+}
