@@ -1,15 +1,17 @@
 # Google Drive for Omarchy
 
-A keyboard-friendly Omarchy bar widget for mounting, searching, and browsing
-Google Drive with [rclone](https://rclone.org/drive/).
+A keyboard-friendly Omarchy bar widget for mounting, searching, and browsing an
+existing [rclone](https://rclone.org/drive/) Google Drive remote.
 
 Google does not provide an official Drive sync client for Linux. This plugin
 uses an rclone FUSE mount instead: files remain in Google Drive, are fetched on
 demand, and use rclone's local VFS cache while open.
 
+The plugin is deliberately a thin interface over rclone. It does not install
+packages, request elevated privileges, or create or modify rclone remotes.
+
 ## Features
 
-- Guided rclone installation and Google OAuth setup in a visible terminal
 - Mount and unmount control from the Omarchy bar
 - Storage usage and recent mounted files
 - Full mounted-Drive search by file name or folder path
@@ -18,23 +20,46 @@ demand, and use rclone's local VFS cache while open.
 - Opens files and folders in Nautilus
 - Optional automatic mount when Omarchy Shell starts
 
+## Prerequisites
+
+Before installing the plugin:
+
+1. Install `rclone` and `fuse3` using your normal system package tooling.
+2. Run `rclone config` in a terminal.
+3. Create a **Google Drive** remote named `gdrive` and complete browser
+   authentication.
+4. Verify the remote:
+
+```sh
+rclone listremotes
+rclone about gdrive:
+```
+
+`rclone listremotes` should include `gdrive:` and `rclone about` should display
+storage information. If you choose a different remote name, set the plugin's
+`remoteName` option after installation.
+
+rclone warns that its shared Google Drive OAuth client is being retired during
+2026. For long-term use, follow rclone's
+[client ID guide](https://rclone.org/drive/#making-your-own-client-id) while
+configuring the remote.
+
 ## Install
 
 ```sh
 omarchy plugin add https://github.com/wesleycole/omarchy-google-drive.git --enable
 ```
 
-The widget appears in the right section of the bar. Click it and choose
-**Install & connect Google Drive**. The setup opens a visible terminal, installs
-`rclone` and `fuse3` through `omarchy pkg add` when needed, and starts Google
-OAuth. The default rclone remote is named `gdrive` and mounts at
-`~/Google Drive`.
+The widget appears in the right section of the bar. With `gdrive:` configured,
+it mounts at `~/Google Drive` automatically by default. If rclone or the remote
+is missing, the panel shows what is required and links back to these
+prerequisites without changing the system.
 
 ## Requirements
 
 - Omarchy with the Quattro shell plugin runtime
-- A Google account
-- `rclone` and `fuse3` (the guided setup can install both)
+- An existing authenticated rclone Google Drive remote
+- `rclone` and `fuse3`
 - Nautilus for opening and selecting mounted files
 
 ## Usage
@@ -45,7 +70,7 @@ Mouse controls:
 |---|---|
 | Left click | Open or close the panel |
 | Right click | Refresh status and recent files |
-| Middle click | Open Google Drive connection setup |
+| Middle click | Open prerequisite instructions |
 
 Panel keyboard controls:
 
@@ -56,7 +81,7 @@ Panel keyboard controls:
 | `/` | Focus file search |
 | `p` | Mount or unmount Google Drive |
 | `r` | Refresh |
-| `l` | Open connection setup |
+| `l` | Open prerequisite instructions |
 | `o` | Open Google Drive |
 | Escape | Clear search or close the panel |
 
@@ -77,7 +102,7 @@ omarchy bar set io.github.wesleycole.google-drive refreshIntervalSec 60 --json
 
 | Setting | Default | Description |
 |---|---:|---|
-| `remoteName` | `gdrive` | rclone remote name without the trailing colon |
+| `remoteName` | `gdrive` | Existing rclone remote name without the trailing colon |
 | `mountPath` | `~/Google Drive` | Local FUSE mount folder |
 | `autoMount` | `true` | Mount when Omarchy Shell starts |
 | `refreshIntervalSec` | `60` | Status refresh interval |
@@ -98,17 +123,11 @@ qs log -p "$OMARCHY_PATH/shell" --tail 100
 
 ## Security and privileges
 
-Omarchy plugins run unsandboxed with your user permissions. This plugin does
-not store Google credentials. OAuth tokens remain in rclone's standard user
-configuration. Package installation is deliberately launched in a visible
-terminal so `omarchy pkg add` can request sudo authentication normally.
-Commands are executed as argument arrays rather than interpolated shell
-strings.
-
-rclone currently warns that its shared Google Drive OAuth client is being
-retired during 2026. For long-term use, follow rclone's
-[client ID guide](https://rclone.org/drive/#making-your-own-client-id) and add
-your own Google OAuth client to the configured remote.
+Omarchy plugins run unsandboxed with your user permissions. This plugin never
+installs packages, requests elevated privileges, or creates or edits rclone
+configuration. OAuth tokens remain in rclone's standard user configuration and
+are not read directly by the plugin. Commands are executed as argument arrays
+rather than interpolated shell strings.
 
 ## Remove
 
@@ -127,7 +146,6 @@ or installed packages.
 PLUGIN_DIR="$HOME/.config/omarchy/plugins/io.github.wesleycole.google-drive"
 omarchy plugin validate "$PLUGIN_DIR"
 qmllint -I "$OMARCHY_PATH/shell" \
-  "$PLUGIN_DIR/BarWidget.qml" \
   "$PLUGIN_DIR/Panel.qml" \
   "$PLUGIN_DIR/Service.qml" \
   "$PLUGIN_DIR/GoogleDriveIcon.qml"

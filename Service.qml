@@ -52,6 +52,7 @@ Item {
     || ["true", "on", "1", "yes"].indexOf(String(autoMountSetting).toLowerCase()) !== -1
   readonly property int refreshIntervalSec: intSetting("refreshIntervalSec", 60, 15, 3600)
   readonly property bool busy: statusProcess.running || controlProcess.running
+  readonly property string setupUrl: "https://github.com/wesleycole/omarchy-google-drive#prerequisites"
   readonly property string helperPath: {
     var value = String(Qt.resolvedUrl("gdrive.py"))
     if (value.indexOf("file://") === 0) value = value.substring(7)
@@ -189,17 +190,11 @@ Item {
   }
 
   function setup() {
-    if (helperPath === "") return
-    actionStatus = installed ? "Opening Google Drive connection…" : "Opening rclone installer…"
+    actionStatus = "Opening rclone prerequisites…"
     actionStatusTimer.restart()
     setupPoll.ticks = 0
     setupPoll.restart()
-    Quickshell.execDetached([
-      "omarchy-launch-terminal",
-      "python3", helperPath, "setup",
-      "--remote", remoteName,
-      "--install"
-    ])
+    Quickshell.execDetached(["omarchy-launch-browser", setupUrl])
   }
 
   function mountDrive() {

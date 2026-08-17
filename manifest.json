@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "io.github.wesleycole.google-drive",
   "name": "Google Drive",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Wesley Cole",
   "license": "MIT",
-  "description": "Mount, search, and browse Google Drive from the Omarchy bar with rclone.",
+  "description": "Mount, search, and browse an existing rclone Google Drive remote from the Omarchy bar.",
   "kinds": [
     "bar-widget"
   ],
@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "Google Drive",
-    "description": "Connect and mount Google Drive, search files, view storage usage, and open files in Nautilus.",
+    "description": "Mount an existing rclone Google Drive remote, search files, view storage usage, and open files in Nautilus.",
     "category": "Files",
     "aliases": ["google-drive", "drive", "rclone"],
     "allowMultiple": false,

@@ -525,7 +525,9 @@ Panel {
 
         Text {
           Layout.fillWidth: true
-          text: drive.installed ? "Connect Google Drive" : "Install & connect Google Drive"
+          text: drive.installed
+            ? "Configure the " + drive.remoteName + ": remote"
+            : "rclone is required"
           color: root.foreground
           font.family: root.fontFamily
           font.pixelSize: Style.font.body
@@ -535,8 +537,8 @@ Panel {
         Text {
           Layout.fillWidth: true
           text: drive.installed
-            ? "Open Google OAuth setup for " + drive.remoteName + ":"
-            : "Install rclone, then open Google OAuth setup"
+            ? "Run rclone config, then refresh this panel"
+            : "Install rclone and FUSE before using this plugin"
           color: root.dim
           font.family: root.fontFamily
           font.pixelSize: Style.font.caption
@@ -545,7 +547,8 @@ Panel {
       }
 
       PanelActionButton {
-        iconText: "󰌋"
+        iconText: "󰏌"
+        tooltipText: "Open prerequisite instructions"
         foreground: root.foreground
         fontFamily: root.fontFamily
         enabled: !drive.busy

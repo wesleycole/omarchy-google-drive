@@ -360,58 +360,6 @@ def unmount_drive(mount_value: str) -> None:
     raise RuntimeError(clean_text(stderr or stdout or "Could not unmount Google Drive"))
 
 
-def wait_to_close() -> None:
-  if not sys.stdin.isatty():
-    return
-  try:
-    input("\nPress Enter to close this terminal…")
-  except (EOFError, KeyboardInterrupt):
-    pass
-
-
-def setup_drive(remote_value: str, install: bool) -> int:
-  remote = normalize_remote(remote_value)
-  rclone = shutil.which("rclone")
-
-  if not rclone and install:
-    print("Installing rclone and FUSE through Omarchy…\n", flush=True)
-    result = subprocess.run(["omarchy", "pkg", "add", "rclone", "fuse3"], check=False)
-    if result.returncode != 0:
-      print("\nPackage installation failed.", file=sys.stderr)
-      wait_to_close()
-      return result.returncode
-    rclone = shutil.which("rclone")
-
-  if not rclone:
-    print("rclone is not installed. Install it with: omarchy pkg add rclone fuse3", file=sys.stderr)
-    wait_to_close()
-    return 1
-
-  remotes, config_error = configured_remotes(rclone)
-  if config_error:
-    print(config_error, file=sys.stderr)
-    wait_to_close()
-    return 1
-
-  print("Google Drive connection setup", flush=True)
-  print("Your OAuth token will be stored in rclone's normal user configuration.\n", flush=True)
-  if remote in remotes:
-    print(f"Reconnecting the existing '{remote}:' remote…\n", flush=True)
-    command = [rclone, "config", "reconnect", f"{remote}:"]
-  else:
-    print(f"Creating the '{remote}:' Google Drive remote…", flush=True)
-    print("A browser window should open for Google sign-in.\n", flush=True)
-    command = [rclone, "config", "create", remote, "drive", "scope", "drive"]
-
-  result = subprocess.run(command, check=False)
-  if result.returncode == 0:
-    print("\nGoogle Drive is connected. The Omarchy widget will detect it shortly.", flush=True)
-  else:
-    print("\nGoogle Drive setup did not complete.", file=sys.stderr, flush=True)
-  wait_to_close()
-  return result.returncode
-
-
 def parser() -> argparse.ArgumentParser:
   result = argparse.ArgumentParser(description=__doc__)
   commands = result.add_subparsers(dest="command", required=True)
@@ -433,9 +381,6 @@ def parser() -> argparse.ArgumentParser:
   search.add_argument("--query", required=True)
   search.add_argument("--limit", type=int, default=50)
 
-  setup = commands.add_parser("setup")
-  setup.add_argument("--remote", default="gdrive")
-  setup.add_argument("--install", action="store_true")
   return result
 
 
@@ -452,8 +397,6 @@ def main() -> int:
     elif args.command == "search":
       limit = max(1, min(100, args.limit))
       print(json.dumps(search_payload(args.mount, args.query, limit)))
-    elif args.command == "setup":
-      return setup_drive(args.remote, args.install)
   except (OSError, RuntimeError, ValueError) as error:
     if args.command in ("status", "search"):
       print(json.dumps({"ok": False, "lastError": clean_text(str(error)), "files": []}))
