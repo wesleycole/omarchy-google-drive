@@ -39,10 +39,30 @@ rclone about gdrive:
 storage information. If you choose a different remote name, set the plugin's
 `remoteName` option after installation.
 
-rclone warns that its shared Google Drive OAuth client is being retired during
-2026. For long-term use, follow rclone's
-[client ID guide](https://rclone.org/drive/#making-your-own-client-id) while
-configuring the remote.
+### Google OAuth client ID
+
+rclone's shared Google Drive OAuth client is being retired during 2026. Each
+user should create a personal **Desktop app** OAuth client by following
+[rclone's client ID guide](https://rclone.org/drive/#making-your-own-client-id),
+then enter that client ID and secret during `rclone config`.
+
+Do not reuse or distribute another user's client credentials. The plugin does
+not ship a shared client ID and never reads the client ID, client secret, or
+OAuth token directly; rclone owns that configuration.
+
+For a personal external Google OAuth app, publish the consent app to Production
+to avoid Testing-mode grants expiring after seven days. Personal use generally
+does not require Google verification, though Google displays an unverified-app
+warning during authorization.
+
+If `gdrive:` already uses rclone's shared client, migrate it in place:
+
+1. Unmount Google Drive from the plugin.
+2. Run `rclone config` and choose **Edit existing remote** → `gdrive`.
+3. Enter your personal client ID and secret, keep the desired Drive scope, and
+   replace the existing token when prompted.
+4. Complete browser authorization and verify with `rclone about gdrive:`.
+5. Mount Google Drive again from the plugin.
 
 ## Install
 
